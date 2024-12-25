@@ -1,11 +1,13 @@
 import questionary
 from db import get_db
 from counter import Counter
+from habit import Habit, PeriodType
 from analyse import calculate_count
+from datetime import datetime
 
 def cli():
     db = get_db()
-    questionary.confirm("are you read?").ask()
+    questionary.confirm("are you ready?").ask()
 
     stop = False
     while not stop:
@@ -14,19 +16,19 @@ def cli():
         choices=["Create", "Increment", "Analyse", "Exit"]
     ).ask()
 
-        name = questionary.text("What is the name of your counter?").ask()
+        
 
         if choice == "Create":
-            desc = questionary.text("What is the description of your counter?").ask()
-            counter = Counter(name, desc)
-            counter.store(db)
+            habitName = questionary.text("What is the name of your habit?").ask()
+            habit = Habit(habitName, PeriodType.DAILY, creationDate=datetime.now())
+            #counter.store(db)
         elif choice == "Increment":
-            counter = Counter(name, "no description")
+            counter = Counter("", "no description")
             counter.increment()
             counter.add_event(db)
         elif choice == "Analyse":
-            count = calculate_count(db, name)
-            print(f"{name} has been incremented {count} times")
+            count = calculate_count(db, "")
+            print(f" has been incremented {count} times")
         else:
             print("Bye!")
             stop = True
