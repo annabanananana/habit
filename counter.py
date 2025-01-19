@@ -1,9 +1,9 @@
 #import datetime
 #import questionairy
-from db import add_counter, increment_counter
+#from db import add_counter, increment_counter
 
 #testcomment
-
+'''
 class Counter:
     def __init__(self, name: str, description: str):
         """Counter class to count events
@@ -29,7 +29,7 @@ class Counter:
 
     def add_event(self, db, date: str = None):
         increment_counter(db, self.name, date)
-
+'''
 '''counter = Counter("test_name", "test_description")
 counter.increment()
 print(counter)
