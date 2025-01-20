@@ -1,10 +1,15 @@
 import sqlite3
+from sqlite3 import OperationalError
 from datetime import date
 
-def get_db(name="main.db"):
-    db = sqlite3.connect(name)
-    create_tables(db)
-    return db
+def get_db(name="test.db"):
+    try:
+        db = sqlite3.connect(name)
+        create_tables(db)
+        return db
+    except OperationalError as e:
+        print(f"Error connecting to database: {e}")
+        return None
 
 def create_tables(db):
     cur = db.cursor()
