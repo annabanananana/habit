@@ -2,9 +2,11 @@ import sqlite3
 from sqlite3 import OperationalError
 from datetime import date
 
-def get_db(name="test.db"):
+#establishing db connection
+def get_db(name="main.db"):
     try:
         db = sqlite3.connect(name)
+        #db.execute("PRAGMA foreign_keys = ON;")  # Enabling foreign key constraints
         create_tables(db)
         return db
     except OperationalError as e:
@@ -12,6 +14,7 @@ def get_db(name="test.db"):
         return None
 
 def create_tables(db):
+    #creating tables for habit and tracker
     cur = db.cursor()
     cur.execute("""CREATE TABLE IF NOT EXISTS habit (
                 name TEXT PRIMARY KEY,
@@ -29,11 +32,21 @@ def add_counter(db, name, period_type):
     cur.execute("INSERT INTO habit VALUES (?, ?, ?)", (name, period_type, str(date.today())))
     db.commit()
 
-def execution_habit(db, name, event_date=None):
-    """Logs a habit event in the tracker table"""
+def habit_exists(db, name):
+    """Check if a habit exists in the database."""
     cur = db.cursor()
+    cur.execute("SELECT COUNT(*) FROM habit WHERE name = ?", (name,))
+    return cur.fetchone()[0] > 0
+
+def add_event_habit(db, name, event_date=None):
+    """Logs a habit event in the tracker table."""
+    if not habit_exists(db, name):
+        raise ValueError(f"Habit '{name}' does not exist in the database.")
+    
     if not event_date:
         event_date = str(date.today())
+    
+    cur = db.cursor()
     cur.execute("INSERT INTO tracker VALUES (?, ?)", (event_date, name))
     db.commit()
 
@@ -42,53 +55,3 @@ def get_habit_data(db, name):
     cur = db.cursor()
     cur.execute("SELECT * FROM tracker WHERE habitName=?", (name,))
     return cur.fetchall()
-
-
-'''
-import sqlite3
-from datetime import date
-
-
-def get_db(name="main.db"):
-    db = sqlite3.connect(name)
-    create_tables(db)
-    return db
-
-
-def create_tables(db):
-    cur = db.cursor()
-
-    cur.execute("""CREATE TABLE IF NOT EXISTS habit (
-                name TEXT PRIMARY KEY,
-                periodType INTEGER,
-                creationDate TEXT)""")
-    
-    cur.execute("""CREATE TABLE IF NOT EXISTS tracker (
-                date TEXT,
-                habitName TEXT,
-                FOREIGN KEY (habitName) REFERENCES habit(name))""")
-    db.commit()
-
-def add_counter(db, name, description):
-    cur = db.cursor()
-    cur.execute("INSERT INTO counter VALUES (?, ?)", (name, description))
-    db.commit()
-
-
-def execution_habit(db, name, event_date=None):
-    cur = db.cursor()
-    if not event_date:
-        event_date = str(date.today())
-    cur.execute("INSERT INTO tracker VALUES (?, ?)", (event_date, name))
-    db.commit()
-
-#use try and except if name does not exist for example
-def get_habit_data(db, name):
-    cur = db.cursor()
-    cur.execute("SELECT * FROM tracker WHERE counterName=?", (name,))
-    return cur.fetchall()
-
-'''
-'''db = get_db()
-create_tables(db)
-'''

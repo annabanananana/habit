@@ -1,12 +1,20 @@
+'''
+This code was generated with the help of ChatGPT. Following prompt was used:
+I want to code a habit tracker app using python and using the CLI. I also want to use questionary and click for easier handling. 
+Further more I want to be able to create, increment, and analyze my habits. 
+There should be weekly and monthly habits, which I want to track if they are fullfilled or not. 
+Throughout the programming ChatGPT was used to solve some other issues, like implementing the overview table and generating the test data.
+'''
+
 import click
 import questionary
 import sqlite3
-from db import get_db, add_counter
+from db import get_db
 from habit import Habit, PeriodType
 from analyze import calculate_count, calculate_streaks, get_habits_by_periodicity, get_longest_run_streak
 from datetime import datetime, date
 from tabulate import tabulate
-
+print(dir(Habit))
 # Store the current habit
 current_habit = None
 
@@ -33,35 +41,6 @@ def create():
         click.echo(f"Error creating habit: {e}")
     except Exception as e:
         click.echo(f"Unexpected error: {e}")
-
-'''       
-@click.command()
-def create():
-    """Create a new habit"""
-    global current_habit
-
-    habit_name = questionary.text("What is the name of your habit?").ask()
-    if not habit_name:
-        click.echo("Habit name cannot be empty.")
-        return
-
-    period_type = questionary.select(
-        "What is the period type?",
-        choices=["Daily", "Weekly"]
-    ).ask()
-
-    if not period_type:
-        click.echo("You must select a period type.")
-        return
-
-    # Convert period_type to the appropriate enum
-    period = PeriodType.DAILY if period_type == "Daily" else PeriodType.WEEKLY
-
-    # Create and store the habit
-    current_habit = Habit(habit_name, period, creationDate=datetime.today())
-    current_habit.store(get_db())  # Save the habit to the database
-    click.echo(f"Habit '{habit_name}' created successfully as a {period_type.lower()} habit.")
-'''
 
 @cli.command()
 def increment():
@@ -92,33 +71,8 @@ def increment():
         click.echo(f"Error interacting with the database: {e}")
     except Exception as e:
         click.echo(f"Unexpected error: {e}")
-'''
-@cli.command()
-def increment():
-    """Increment the habit's event count"""
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT name FROM habit")
-    habits = cursor.fetchall()
 
-    if not habits:
-        click.echo("No habit created yet!")
-        return
 
-    habit_names = [name for name, in habits]
-    selected_habit = questionary.select(
-        "Which habit do you want to increment?",
-        choices=habit_names
-    ).ask()
-
-    if not selected_habit:
-        click.echo("No habit selected.")
-        return
-
-    habit = Habit(selected_habit, None, None)
-    habit.add_event(db)
-    click.echo(f"Habit '{selected_habit}' has been incremented.")
-'''
 @click.command("filter")
 @click.option("--period", type=click.Choice(["DAILY", "WEEKLY"], case_sensitive=False), prompt="Enter the period type (DAILY or WEEKLY)")
 def filter_habits(period):
@@ -218,7 +172,7 @@ def analyze():
             return
 
         table_data = []
-        headers = ["Habit Name", "Period Type", "Current Streak", "Max Streak"]
+        headers = ["Habit Name", "Period Type", "Total Count", "Current Streak", "Max Streak"]
 
         for name, period_type_value in habits:
             period_type = PeriodType(period_type_value)
@@ -228,9 +182,10 @@ def analyze():
 
             habit = Habit(name, period_type, None)
             habit.events = events
+            total_count = calculate_count(db, name)
             current_streak, max_streak = calculate_streaks(habit)
 
-            table_data.append([name, "Weekly" if period_type == PeriodType.WEEKLY else "Daily", current_streak, max_streak])
+            table_data.append([name, "Weekly" if period_type == PeriodType.WEEKLY else "Daily", total_count, current_streak, max_streak])
 
         click.echo(tabulate(table_data, headers, tablefmt="grid"))
     except sqlite3.Error as e:
@@ -294,46 +249,6 @@ def analyze_habit(name):
         analyze_all_habits()
 
 
-'''
-@cli.command()
-def analyze():
-    """Analyze the habit's execution data and show an overview"""
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT name, periodType FROM habit")
-    habits = cursor.fetchall()
-
-    if not habits:
-        click.echo("No habits found!")
-        return
-
-    table_data = []
-    headers = ["Habit Name", "Period Type", "Current Streak", "Max Streak"]
-
-    for name, period_type_value in habits:
-        period_type = PeriodType(period_type_value)
-
-        # Fetch habit events
-        cursor.execute("SELECT date FROM tracker WHERE habitName = ?", (name,))
-        events = [row[0] for row in cursor.fetchall()]
-
-        # Create habit object and calculate streaks
-        habit = Habit(name, period_type, None)
-        habit.events = events
-        current_streak, max_streak = calculate_streaks(habit)
-
-        # Add habit analysis to table data
-        table_data.append([
-            name,
-            "Weekly" if period_type == PeriodType.WEEKLY else "Daily",
-            current_streak,
-            max_streak
-        ])
-
-    # Display the table
-    click.echo(tabulate(table_data, headers, tablefmt="grid"))
-'''
-
 @click.command()
 def show():
     """Show all habits"""
@@ -370,47 +285,3 @@ cli.add_command(filter_habits)
 
 if __name__ == "__main__":
     cli()
-
-
-'''
-import questionary
-from db import get_db
-#from counter import Counter
-from habit import Habit, PeriodType
-from analyse import calculate_count
-from datetime import datetime
-
-def cli():
-    db = get_db()
-    questionary.confirm("are you ready?").ask()
-
-    stop = False
-    while not stop:
-        choice = questionary.select(
-        "What do you want to do?",
-        choices=["Create", "Increment", "Analyse", "Exit"]
-    ).ask()
-
-        
-
-        if choice == "Create":
-            habitName = questionary.text("What is the name of your habit?").ask()
-            habit = Habit(habitName, PeriodType.DAILY, creationDate=datetime.today())
-            #habit.store(db)
-        elif choice == "Increment":
-            habit = Habit(habitName, "no description", creationDate = datetime.today())
-            habit.execution()
-            habit.add_event(db)
-        elif choice == "Analyse":
-            count = calculate_count(db, "")
-            print(f"{habitName} has been incremented {count} times")
-        else:
-            print("Bye!")
-            stop = True
-
-
-
-if __name__ == "__main__":
-    cli()
-
-'''
