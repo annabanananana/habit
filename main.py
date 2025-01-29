@@ -14,9 +14,6 @@ from habit import Habit, PeriodType
 from analyze import calculate_count, calculate_streaks, get_habits_by_periodicity, get_longest_run_streak
 from datetime import datetime, date
 from tabulate import tabulate
-print(dir(Habit))
-# Store the current habit
-current_habit = None
 
 @click.group()
 def cli():
