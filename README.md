@@ -14,18 +14,25 @@ It also includes a test_project.py file which automatically tests the applicatio
 
 ##Installation
 
+download or clone the git repository.
+
 '''shell
-pip install -r requirements.txt '''
+in the coresponding directory run the following command to install necessary packages
+pip install -requirements.txt '''
 
 ##Usage
 
-Start
+Start the program with following command:
 
 '''shell
-python main-py '''
+python main.py '''
 
+this will show you the upper commands you can chose from. Start off with 'create' to add a new habit to your database
 ##tests
+to run the test file, go to the db.py file line 6 and change name="main.db" into name="test.db" and run the following command
 
 '''shell
 pytest  .
 '''
+
+you can adjust the test file with additional date, e.g., but be sure to update the assertions with it.
