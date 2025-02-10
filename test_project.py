@@ -60,16 +60,16 @@ class TestHabitTracker:
     
         # Test the calculate_streaks function for daily habits
         habit_1 = Habit("daily_habit_1", PeriodType.DAILY, creationDate="2025-01-01")
-        habit_1.load_events_from_db(self.db)
+        habit_1.load_events(self.db)
         habit_1.add_event(self.db, today)  # Add today's event explicitly for the test
         current_streak_1, max_streak_1 = calculate_streaks(habit_1)
 
         habit_2 = Habit("daily_habit_2", PeriodType.DAILY, creationDate="2025-01-01")
-        habit_2.load_events_from_db(self.db)
+        habit_2.load_events(self.db)
         current_streak_2, max_streak_2 = calculate_streaks(habit_2)
 
         habit_3 = Habit("daily_habit_3", PeriodType.DAILY, creationDate="2025-01-01")
-        habit_3.load_events_from_db(self.db)
+        habit_3.load_events(self.db)
         current_streak_3, max_streak_3 = calculate_streaks(habit_3)
 
         # Print debugging information
@@ -88,11 +88,11 @@ class TestHabitTracker:
 
         # Test the calculate_streaks function for weekly habits
         habit_weekly_1 = Habit("weekly_habit_1", PeriodType.WEEKLY, creationDate="2024-12-15")
-        habit_weekly_1.load_events_from_db(self.db)
+        habit_weekly_1.load_events(self.db)
         current_streak_weekly_1, max_streak_weekly_1 = calculate_streaks(habit_weekly_1)
 
         habit_weekly_2 = Habit("weekly_habit_2", PeriodType.WEEKLY, creationDate="2024-12-16")
-        habit_weekly_2.load_events_from_db(self.db)
+        habit_weekly_2.load_events(self.db)
         current_streak_weekly_2, max_streak_weekly_2 = calculate_streaks(habit_weekly_2)
 
         print(f"habit_weekly_1: Current streak: {current_streak_weekly_1}, Max streak: {max_streak_weekly_1}")
@@ -186,7 +186,7 @@ class TestHabitTracker:
     def test_calculate_streak(self):
     # Load habit data
         habit = Habit("daily_habit", PeriodType.DAILY, creationDate="2025-01-17")
-        habit.load_events_from_db(self.db)  # Ensure events are loaded
+        habit.load_events(self.db)  # Ensure events are loaded
 
     # Calculate streaks
         current_streak, max_streak = calculate_streaks(habit)
@@ -200,7 +200,7 @@ class TestHabitTracker:
         # Test streak calculation for weekly habit
         habit_weekly = Habit("weekly_habit", PeriodType.WEEKLY, creationDate="2024-12-16")
         current_streak, max_streak = calculate_streaks(habit_weekly)
-        habit_weekly.load_events_from_db(self.db)
+        habit_weekly.load_events(self.db)
         print(f"Events for weekly_habit: {habit_weekly.events}")
         current_streak, max_streak = calculate_streaks(habit_weekly)
         print(f"Current streak for weekly_habit: {current_streak}, Max streak: {max_streak}")
