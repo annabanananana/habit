@@ -70,7 +70,7 @@ def increment():
         click.echo(f"Unexpected error: {e}")
 
 
-@click.command("filter")
+@click.command("filter_habits")
 @click.option("--period", type=click.Choice(["DAILY", "WEEKLY"], case_sensitive=False), prompt="Enter the period type (DAILY or WEEKLY)")
 def filter_habits(period):
     """
@@ -89,8 +89,7 @@ def filter_habits(period):
     else:
         print(f"No habits found with {period.upper()} periodicity.")
 
-
-@click.command("analyze")
+@click.command()
 def analyze():
     """Analyze habit data."""
     db = get_db()
@@ -101,6 +100,7 @@ def analyze():
         choices=[
             "List all habits",
             "List habits by periodicity",
+           # "Habit count"#not yet included
             "Longest run streak (all habits)",
             "Longest run streak (specific habit)",
             "Back"
@@ -112,7 +112,7 @@ def analyze():
         if habits:
             click.echo("Here are all your tracked habits:")
             for habit in habits:
-                click.echo(f"- {habit.name} ({habit.periodType.name})")
+                click.echo(f"- {habit.name} ({habit.period_type.name})")
         else:
             click.echo("No habits found.")
 
@@ -154,7 +154,7 @@ def analyze():
 
     elif choice == "Back":
         click.echo("Returning to main menu.")
-
+'''
 @cli.command()
 def analyze():
     """Analyze the habit's execution data and show an overview"""
@@ -244,10 +244,10 @@ def analyze_habit(name):
         print(f"Habit '{habit.name}': Current Streak = {current_streak}, Max Streak = {max_streak}")
     else:
         analyze_all_habits()
-
+'''
 
 @click.command()
-def show():
+def show_habits():
     """Show all habits"""
     db = get_db()
     cursor = db.cursor()
@@ -275,7 +275,7 @@ def exit_cli():
 cli.add_command(create)
 cli.add_command(increment)
 cli.add_command(analyze)
-cli.add_command(show)
+cli.add_command(show_habits)
 cli.add_command(exit_cli)
 cli.add_command(filter_habits)
 
