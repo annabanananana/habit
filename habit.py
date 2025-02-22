@@ -67,3 +67,4 @@ class Habit:
         cursor = db.cursor()
         cursor.execute("SELECT date FROM tracker WHERE habitName = ?", (self.name,))
         self.events = [row[0] for row in cursor.fetchall()]
+

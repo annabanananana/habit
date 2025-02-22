@@ -29,7 +29,7 @@ def create_tables(db):
 def add_counter(db, name, period_type):
     """Adds a new habit to the habit table"""
     cur = db.cursor()
-    cur.execute("INSERT INTO habit VALUES (?, ?, ?)", (name, period_type, str(date.today())))
+    cur.execute("INSERT INTO habit VALUES (?, ?, ?)", (name, period_type, date.today().isoformat()))
     db.commit()
 
 def habit_exists(db, name):
@@ -47,7 +47,7 @@ def add_event_habit(db, name, event_date=None):
         event_date = str(date.today())
     
     cur = db.cursor()
-    cur.execute("INSERT INTO tracker VALUES (?, ?)", (event_date, name))
+    cur.execute("INSERT INTO tracker VALUES (?, ?)", (date.fromisoformat(event_date).isoformat(), name))
     db.commit()
 
 def get_habit_data(db, name):
@@ -55,3 +55,4 @@ def get_habit_data(db, name):
     cur = db.cursor()
     cur.execute("SELECT * FROM tracker WHERE habitName=?", (name,))
     return cur.fetchall()
+
