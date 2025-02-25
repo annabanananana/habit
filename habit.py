@@ -3,8 +3,8 @@ from enum import Enum
 
 class PeriodType(Enum):
     """PeriodType class for daily and weekly habits."""
-    DAILY = 1
-    WEEKLY = 2
+    DAILY = "daily"
+    WEEKLY = "weekly"
 
 class Habit:
     def __init__(self, name: str, period_type: PeriodType, creation_date: date):

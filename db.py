@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3 import OperationalError
 from datetime import date
+from habit import PeriodType
 
 #establishing db connection
 def get_db(name="main.db"):
@@ -12,13 +13,18 @@ def get_db(name="main.db"):
     except OperationalError as e:
         print(f"Error connecting to database: {e}")
         return None
+    
+#class PeriodType():
+ #   """PeriodType class for daily and weekly habits."""
+  #  DAILY = "daily"
+   # WEEKLY = "weekly"
 
 def create_tables(db):
     #creating tables for habit and tracker
     cur = db.cursor()
     cur.execute("""CREATE TABLE IF NOT EXISTS habit (
                 name TEXT PRIMARY KEY,
-                periodType INTEGER,
+                periodType TEXT,
                 creationDate TEXT)""")
     cur.execute("""CREATE TABLE IF NOT EXISTS tracker (
                 date TEXT,
@@ -29,7 +35,7 @@ def create_tables(db):
 def add_counter(db, name, period_type):
     """Adds a new habit to the habit table"""
     cur = db.cursor()
-    cur.execute("INSERT INTO habit VALUES (?, ?, ?)", (name, period_type, date.today().isoformat()))
+    cur.execute("INSERT INTO habit VALUES (?, ?, ?)", (name, period_type.name, date.today().isoformat()))
     db.commit()
 
 def habit_exists(db, name):
