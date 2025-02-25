@@ -11,7 +11,7 @@ import questionary
 import sqlite3
 from db import get_db
 from habit import Habit, PeriodType
-from analyze import calculate_count, calculate_streaks, get_habits_by_periodicity, get_longest_daily_run_streak, get_longest_weekly_run_streak, calculate_streaks
+from analyze import calculate_count, calculate_streaks, get_habits_by_periodicity, get_longest_streak, get_longest_daily_run_streak, get_longest_weekly_run_streak
 from datetime import datetime, date
 from tabulate import tabulate
 
@@ -100,7 +100,7 @@ def analyze():
         choices=[
             "List all habits",
             "List habits by periodicity",
-           # "Habit count"#not yet included
+            "Habit count",#not yet included
             "Longest run streak (daily habits)",
             "Longest run streak (weekly habits)",
             "Longest run streak (specific habit)",
@@ -130,20 +130,46 @@ def analyze():
                 click.echo(f"- {habit.name}")
         else:
             click.echo(f"No {period_choice.lower()} habits found.")
+    
+    elif choice == "Habit count":
+        habits = Habit.load_all_habits(db)
+        if not habits:
+            click.echo("No habits found.")
+            return
+
+        habit_name = questionary.select(
+            "Which habit?",
+            choices=[habit.name for habit in habits]
+        ).ask()
+        count = calculate_count(db, habit_name)
+        if count > 0:
+            click.echo(f"The habit '{habit_name}' has been executed {count} times.")
+        else:
+            click.echo(f"The habit '{habit_name}' has not been executed yet.")
 
     elif choice == "Longest run streak (daily habits)":
-        longest_daily_habit, longest_daily_streak = get_longest_daily_run_streak(db)
+        daily_habits = get_habits_by_periodicity(db, PeriodType.DAILY)
+        if not daily_habits:
+            click.echo("No daily habits found.")
+            return
 
-        if longest_daily_habit:
-            click.echo(f"Daily habit with the longest streak: {longest_daily_habit} ({longest_daily_streak} days)")
+        longest_daily_habits = get_longest_daily_run_streak(db)
+        if longest_daily_habits:
+            habit_list = "\n".join([f"- {habit} ({streak} days)" for habit, streak in longest_daily_habits])
+            click.echo(f"📅 **Daily habits with the longest streak:**\n{habit_list}")
         else:
-            click.echo("No daily habits found or no streaks available.")
+            click.echo("No streaks available for daily habits.")
 
     elif choice == "Longest run streak (weekly habits)":
-        longest_weekly_habit, longest_weekly_streak = get_longest_weekly_run_streak(db)
-        
-        if longest_weekly_habit:
-            click.echo(f"Weekly habit with the longest streak: {longest_weekly_habit} ({longest_weekly_streak} weeks)")
+        weekly_habits = get_habits_by_periodicity(db, PeriodType.WEEKLY)
+        if not weekly_habits:
+            click.echo("No weekly habits found.")
+            return
+    
+        longest_weekly_habits = get_longest_weekly_run_streak(db)
+        if longest_weekly_habits:
+            habit_list = "\n".join([f"- {habit} ({streak} weeks)" for habit, streak in longest_weekly_habits])
+            click.echo(f"📅 **Weekly habits with the longest streak:**\n{habit_list}")
         else:
             click.echo("No weekly habits found or no streaks available.")
 
@@ -269,9 +295,8 @@ def show_habits():
         return
 
     click.echo("Here are your current habits:")
-    for habit in habits:
-        name, period_type = habit
-        period_name = "Daily" if period_type == 1 else "Weekly"
+    for name, period_type in habits:
+        period_name = "Daily" if period_type.upper() == "DAILY" else "Weekly"
         click.echo(f"- {name}: {period_name}")
 
 
