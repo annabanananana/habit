@@ -66,14 +66,14 @@ def calculate_streaks(habit_obj):
         current_streak = 1
         prev_date = event_dates[0]
 
-        for current_date in event_dates[1:]:
+        for current_date in event_dates[1:]:    #missing day 1
             # Debugging output
             print(f"Comparing {prev_date} with {current_date}")
             gap = (current_date - prev_date).days
             print(f"Gap: {gap} days")
             print(f"Period type: {habit_obj.period_type}")
-            # Explicitly allow exactly 7-day gaps for weekly habits
-            if gap <= (7 if habit_obj.period_type == PeriodType.WEEKLY else 1):
+            # Explicitly allow exactly 7-day gaps for weekly habits, must be == 7 or == 1
+            if gap <= (7 if habit_obj.period_type == PeriodType.WEEKLY else 1): # 7 days for weekly, 1 day for daily or adjust for different gaps
                 current_streak += 1
                 print(f"Streak increased to {current_streak}")
             else:
@@ -84,7 +84,7 @@ def calculate_streaks(habit_obj):
 
         max_streak = max(max_streak, current_streak)  # Ensure last streak is counted
 
-        # **Calculate ongoing streak**
+        # **Calculate ongoing streak**  new function!
         today = datetime.today()
         if (today - event_dates[-1]).days > gap:
             current_streak = 0  # Reset if last event is too old
@@ -197,6 +197,43 @@ def get_longest_daily_run_streak(db_connection):
 
 def get_longest_weekly_run_streak(db_connection):
     return get_longest_streak(db_connection, PeriodTypeEnum.WEEKLY)
+
+
+def get_longest_overall_run_streak(db_connection):
+    return get_longest_streak(db_connection, PeriodTypeEnum.DAILY) + get_longest_streak(db_connection, PeriodTypeEnum.WEEKLY)
+    """
+    Determine all habits with the longest run streak for a given period type (daily or weekly).
+
+    :param db_connection: Database connection object
+    :param period_type: PeriodTypeEnum (DAILY or WEEKLY)
+    :return: List of tuples [(habit_name, longest_streak), ...]
+    """
+    try:
+        habits = Habit.load_all_habits(db_connection)
+        longest_streak = 0
+        longest_habits = []  # Store all habits with the same longest streak
+
+        for habitPeriodtype in PeriodTypeEnum:
+            for habit in habits:        
+                if PeriodTypeEnum[habit.period_type.name] == habitPeriodtype:
+                    habit.load_events(db_connection)
+                    max_streak = calculate_streaks(habit)
+                
+                    if isinstance(max_streak, tuple):  # Ensure compatibility
+                        _, max_streak = max_streak  
+
+                    if max_streak > longest_streak:
+                        longest_streak = max_streak
+                        longest_habits = [(habit.name, max_streak)]  # Reset and add new leader
+                    elif max_streak == longest_streak and max_streak > 0:
+                        longest_habits.append((habit.name, max_streak))  # Add to existing leaders
+
+        return longest_habits  # Return a list of all top habits
+    
+    except Exception as e:
+        print(f"No longest streak run available: {e}")
+        traceback.print_exc()
+        return []
 '''
 
 

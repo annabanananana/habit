@@ -11,7 +11,7 @@ import questionary
 import sqlite3
 from db import get_db
 from habit import Habit, PeriodType
-from analyze import calculate_count, calculate_streaks, get_habits_by_periodicity, get_longest_streak, get_longest_daily_run_streak, get_longest_weekly_run_streak
+from analyze import calculate_count, calculate_streaks, get_habits_by_periodicity, get_longest_streak, get_longest_daily_run_streak, get_longest_weekly_run_streak, get_longest_overall_run_streak
 from datetime import datetime, date
 from tabulate import tabulate
 
@@ -104,6 +104,7 @@ def analyze():
             "Longest run streak (daily habits)",
             "Longest run streak (weekly habits)",
             "Longest run streak (specific habit)",
+            "Longest run streak (overall)",
             "Back"
         ],
     ).ask()
@@ -187,6 +188,15 @@ def analyze():
         habit = next(h for h in habits if h.name == habit_name)
         current_streak, max_streak = calculate_streaks(habit)
         click.echo(f"The habit '{habit.name}' has a current streak of {current_streak} days and a max streak of {max_streak} days.")
+
+    elif choice == "Longest run streak (overall)":
+        longest_habits = get_longest_overall_run_streak(db)
+        if longest_habits:
+            habit_list = "\n".join([f"- {habit} ({streak} days)" for habit, streak in longest_habits])
+            click.echo(f"📅 **Habits with the longest streak:**\n{habit_list}")
+        else:
+            click.echo("No streaks available for daily habits.")
+
 
     elif choice == "Back":
         click.echo("Returning to main menu.")
