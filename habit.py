@@ -1,10 +1,13 @@
 from datetime import date
 from enum import Enum
 
+
 class PeriodType(Enum):
     """PeriodType class for daily and weekly habits."""
+
     DAILY = "daily"
     WEEKLY = "weekly"
+
 
 class Habit:
     def __init__(self, name: str, period_type: PeriodType, creation_date: date):
@@ -36,7 +39,6 @@ class Habit:
         cur.execute("INSERT INTO tracker (date, habitName) VALUES (?, ?)", (event_date, self.name))
         db.commit()
 
-   
     @classmethod
     def load_all_habits(cls, db):
         """Load all habits from the database."""
@@ -48,7 +50,7 @@ class Habit:
             habit_objects = []
             for name, period, creation_date in habits:
                 try:
-                # Create a Habit instance for each habit in the database
+                    # Create a Habit instance for each habit in the database
                     habit = cls(name, PeriodType(period), creation_date=creation_date)
                     habit.load_events(db)  # Load the events for the habit
                     habit_objects.append(habit)
@@ -61,10 +63,9 @@ class Habit:
         except Exception as e:
             print(f"Error loading habits from database: {e}")
             return []
- 
+
     def load_events(self, db):
         """Load all events from the database."""
         cursor = db.cursor()
         cursor.execute("SELECT date FROM tracker WHERE habitName = ?", (self.name,))
         self.events = [row[0] for row in cursor.fetchall()]
-

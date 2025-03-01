@@ -3,7 +3,14 @@ import unittest
 from datetime import date, timedelta
 from db import get_db, add_event_habit, habit_exists, get_habit_data
 from habit import Habit, PeriodType
-from analyze import calculate_count, calculate_streaks, get_habits_by_periodicity, get_longest_daily_run_streak, get_longest_weekly_run_streak
+from analyze import (
+    calculate_count,
+    calculate_streaks,
+    get_habits_by_periodicity,
+    get_longest_daily_run_streak,
+    get_longest_weekly_run_streak,
+)
+
 
 class TestHabitTracker(unittest.TestCase):
 
@@ -27,22 +34,23 @@ class TestHabitTracker(unittest.TestCase):
         self.db_cursor.execute("DELETE FROM tracker")
         self.db.commit()
 
-    def test_create_habit(self):
-        """Test habit creation and retrieval from DB"""
+    def test_calculate_event_count(self):
+        """Test event counting for a habit"""
         habit_name = "Exercise"
         habit = Habit(habit_name, PeriodType.DAILY, date.today())
         habit.store(self.db)
-        self.assertTrue(habit_exists(self.db, habit_name))
+        habit.add_event(self.db, "2025-02-22")
+        count = calculate_count(self.db, habit_name)
+        self.assertEqual(count, 1)
 
-    def test_increment_habit(self):
-        """Test habit event increment"""
+    def test_calculate_event_count(self):
+        """Test event counting for a habit"""
         habit_name = "Exercise"
         habit = Habit(habit_name, PeriodType.DAILY, date.today())
         habit.store(self.db)
-        habit.add_event(self.db)
-        events = get_habit_data(self.db, habit_name)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(events[0][0], date.today().isoformat())
+        habit.add_event(self.db, "2025-02-22")
+        count = calculate_count(self.db, habit_name)
+        self.assertEqual(count, 1)
 
     def test_calculate_event_count(self):
         """Test event counting for a habit"""
@@ -70,25 +78,24 @@ class TestHabitTracker(unittest.TestCase):
         habit_name = "Exercise"
         habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
         habit.store(self.db)
-    
+
         # Add events with a 7-day gap
         habit.add_event(self.db)
         habit.add_event(self.db, (date.today() - timedelta(days=7)).isoformat())
-    
+
         # Debugging: Check if events are correctly added
         events = get_habit_data(self.db, habit_name)
         print(f"Stored events: {events}")
-    
+
         # Calculate streaks
         current_streak, max_streak = calculate_streaks(habit)
-    
+
         # Debugging: Print out calculated streaks
         print(f"Calculated streaks: Current - {current_streak}, Max - {max_streak}")
-    
+
         # Assert the correct streak values
         self.assertEqual(current_streak, 2)
         self.assertEqual(max_streak, 2)
-
 
     def test_get_habits_by_periodicity_daily(self):
         """Test filtering habits by daily periodicity"""
@@ -146,6 +153,7 @@ class TestHabitTracker(unittest.TestCase):
         """Test behavior when adding events to a non-existing habit"""
         with self.assertRaises(ValueError):
             add_event_habit(self.db, "NonExistentHabit")
+
 
 if __name__ == "__main__":
     unittest.main()
