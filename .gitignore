@@ -4,3 +4,4 @@
 .venv/
 .pytest_cache/
 main.db
+test_main.db
