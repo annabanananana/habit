@@ -1,25 +1,35 @@
-'''
+"""
 This code was generated with the help of ChatGPT. Following prompt was used:
 I want to code a habit tracker app using python and using the CLI. I also want to use questionary and click for easier handling. 
 Further more I want to be able to create, increment, and analyze my habits. 
 There should be weekly and monthly habits, which I want to track if they are fullfilled or not. 
 Throughout the programming ChatGPT was used to solve some other issues, like implementing the overview table and generating the test data.
-'''
+"""
 
 import click
 import questionary
 import sqlite3
 from db import get_db
 from habit import Habit, PeriodType
-from analyze import calculate_count, calculate_streaks, get_habits_by_periodicity, get_longest_streak, get_longest_daily_run_streak, get_longest_weekly_run_streak, get_longest_overall_run_streak
+from analyze import (
+    calculate_count,
+    calculate_streaks,
+    get_habits_by_periodicity,
+    get_longest_streak,
+    get_longest_daily_run_streak,
+    get_longest_weekly_run_streak,
+    get_longest_overall_run_streak,
+)
 from datetime import datetime, date
 from tabulate import tabulate
+
 
 @click.group()
 def cli():
     """Habit Tracker CLI"""
     global current_habit
     current_habit = None  # Reset current habit at the start
+
 
 @cli.command()
 def create():
@@ -33,11 +43,14 @@ def create():
         cursor = db.cursor()
         cursor.execute("INSERT INTO habit (name, periodType) VALUES (?, ?)", (habit_name, period_type.value))
         db.commit()
-        click.echo(f"Habit '{habit_name}' created successfully as a {'daily' if period_type == PeriodType.DAILY else 'weekly'} habit.")
+        click.echo(
+            f"Habit '{habit_name}' created successfully as a {'daily' if period_type == PeriodType.DAILY else 'weekly'} habit."
+        )
     except sqlite3.IntegrityError as e:
         click.echo(f"Error creating habit: {e}")
     except Exception as e:
         click.echo(f"Unexpected error: {e}")
+
 
 @cli.command()
 def increment():
@@ -61,7 +74,9 @@ def increment():
             click.echo(f"Habit '{selected_habit}' not found!")
             return
 
-        cursor.execute("INSERT INTO tracker (date, habitName) VALUES (?, ?)", (date.today().isoformat(), selected_habit))
+        cursor.execute(
+            "INSERT INTO tracker (date, habitName) VALUES (?, ?)", (date.today().isoformat(), selected_habit)
+        )
         db.commit()
         click.echo(f"Habit '{selected_habit}' has been incremented.")
     except sqlite3.Error as e:
@@ -71,7 +86,11 @@ def increment():
 
 
 @click.command("filter_habits")
-@click.option("--period", type=click.Choice(["DAILY", "WEEKLY"], case_sensitive=False), prompt="Enter the period type (DAILY or WEEKLY)")
+@click.option(
+    "--period",
+    type=click.Choice(["DAILY", "WEEKLY"], case_sensitive=False),
+    prompt="Enter the period type (DAILY or WEEKLY)",
+)
 def filter_habits(period):
     """
     Filter and display habits by periodicity (DAILY or WEEKLY).
@@ -89,6 +108,7 @@ def filter_habits(period):
     else:
         print(f"No habits found with {period.upper()} periodicity.")
 
+
 @click.command()
 def analyze():
     """Analyze habit data."""
@@ -100,12 +120,13 @@ def analyze():
         choices=[
             "List all habits",
             "List habits by periodicity",
-            "Habit count",#not yet included
+            "Habit count",
             "Longest run streak (daily habits)",
             "Longest run streak (weekly habits)",
             "Longest run streak (specific habit)",
             "Longest run streak (overall)",
-            "Back"
+            "Show table of habits",
+            "Back",
         ],
     ).ask()
 
@@ -119,10 +140,7 @@ def analyze():
             click.echo("No habits found.")
 
     elif choice == "List habits by periodicity":
-        period_choice = questionary.select(
-            "Which periodicity?",
-            choices=["Daily", "Weekly"]
-        ).ask()
+        period_choice = questionary.select("Which periodicity?", choices=["Daily", "Weekly"]).ask()
         periodicity = PeriodType.DAILY if period_choice == "Daily" else PeriodType.WEEKLY
         habits = get_habits_by_periodicity(db, periodicity)
         if habits:
@@ -131,17 +149,14 @@ def analyze():
                 click.echo(f"- {habit.name}")
         else:
             click.echo(f"No {period_choice.lower()} habits found.")
-    
+
     elif choice == "Habit count":
         habits = Habit.load_all_habits(db)
         if not habits:
             click.echo("No habits found.")
             return
 
-        habit_name = questionary.select(
-            "Which habit?",
-            choices=[habit.name for habit in habits]
-        ).ask()
+        habit_name = questionary.select("Which habit?", choices=[habit.name for habit in habits]).ask()
         count = calculate_count(db, habit_name)
         if count > 0:
             click.echo(f"The habit '{habit_name}' has been executed {count} times.")
@@ -166,7 +181,7 @@ def analyze():
         if not weekly_habits:
             click.echo("No weekly habits found.")
             return
-    
+
         longest_weekly_habits = get_longest_weekly_run_streak(db)
         if longest_weekly_habits:
             habit_list = "\n".join([f"- {habit} ({streak} weeks)" for habit, streak in longest_weekly_habits])
@@ -180,14 +195,13 @@ def analyze():
             click.echo("No habits found.")
             return
 
-        habit_name = questionary.select(
-            "Which habit?",
-            choices=[habit.name for habit in habits]
-        ).ask()
+        habit_name = questionary.select("Which habit?", choices=[habit.name for habit in habits]).ask()
 
         habit = next(h for h in habits if h.name == habit_name)
         current_streak, max_streak = calculate_streaks(habit)
-        click.echo(f"The habit '{habit.name}' has a current streak of {current_streak} days and a max streak of {max_streak} days.")
+        click.echo(
+            f"The habit '{habit.name}' has a current streak of {current_streak} days and a max streak of {max_streak} days."
+        )
 
     elif choice == "Longest run streak (overall)":
         longest_habits = get_longest_overall_run_streak(db)
@@ -197,9 +211,51 @@ def analyze():
         else:
             click.echo("No streaks available for daily habits.")
 
+    elif choice == "Show table of habits":
+        try:
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("SELECT name, periodType FROM habit")
+            habits = cursor.fetchall()
+
+            if not habits:
+                click.echo("No habits found!")
+                return
+
+            table_data = []
+            headers = ["Habit Name", "Period Type", "Total Count", "Current Streak", "Max Streak"]
+
+            for name, period_type_value in habits:
+                period_type = PeriodType(period_type_value)
+
+                cursor.execute("SELECT date FROM tracker WHERE habitName = ?", (name,))
+                events = [row[0] for row in cursor.fetchall()]
+
+                habit = Habit(name, period_type, None)
+                habit.events = events
+                total_count = calculate_count(db, name)
+                current_streak, max_streak = calculate_streaks(habit)
+
+                table_data.append(
+                    [
+                        name,
+                        "Weekly" if period_type == PeriodType.WEEKLY else "Daily",
+                        total_count,
+                        current_streak,
+                        max_streak,
+                    ]
+                )
+
+            click.echo(tabulate(table_data, headers, tablefmt="grid"))
+        except sqlite3.Error as e:
+            click.echo(f"Error interacting with the database: {e}")
+        except Exception as e:
+            click.echo(f"Unexpected error: {e}")
 
     elif choice == "Back":
         click.echo("Returning to main menu.")
+
+
 '''
 @cli.command()
 def analyze():
@@ -292,6 +348,7 @@ def analyze_habit(name):
         analyze_all_habits()
 '''
 
+
 @click.command()
 def show_habits():
     """Show all habits"""
@@ -315,6 +372,7 @@ def exit_cli():
     """Exit the habit tracker CLI"""
     click.echo("Goodbye!")
     exit()
+
 
 # Add the commands to the CLI group
 cli.add_command(create)
