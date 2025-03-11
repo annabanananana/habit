@@ -15,10 +15,12 @@ import pytest
 
 class TestHabitTracker:
 
+    TEMP_TEST_DB = "test_main.db"
+
     @classmethod
     def setup_class(cls):
         """Runs once before all tests: sets up a new database."""
-        cls.db = get_db(name="test_main.db")
+        cls.db = get_db(cls.TEMP_TEST_DB)
         cls.db_cursor = cls.db.cursor()
 
     def setup_method(self):
@@ -34,6 +36,7 @@ class TestHabitTracker:
         cls.db_cursor.execute("DROP TABLE IF EXISTS tracker")
         cls.db.commit()
         cls.db.close()
+        os.remove(cls.TEMP_TEST_DB)
 
     def test_calculate_event_count(self):
         """Test event counting for a habit"""
