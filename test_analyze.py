@@ -52,10 +52,21 @@ class TestHabitTracker:
         habit.add_event(self.db, "2025-02-27")
         count = calculate_count(self.db, habit_name)
         assert count == 5
-
-    def test_calculate_event_count(self):
-        """Test event counting for a daily habit"""
         habit_name = "Exercise_daily2"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db, "2025-02-22")
+        # count = calculate_count(self.db, habit_name)
+        # assert count == 1
+        habit.add_event(self.db, "2025-02-23")
+        habit.add_event(self.db, "2025-02-24")
+        habit.add_event(self.db, "2025-02-25")
+        habit.add_event(self.db, "2025-02-27")
+        habit.add_event(self.db, "2025-03-01")
+        count = calculate_count(self.db, habit_name)
+        assert count == 6
+
+        habit_name = "Exercise_daily3"
         habit = Habit(habit_name, PeriodType.DAILY, date.today())
         habit.store(self.db)
         habit.add_event(self.db)
@@ -63,21 +74,25 @@ class TestHabitTracker:
         count = calculate_count(self.db, habit_name)
         assert count == 2
 
-    def test_calculate_event_count(self):
-        """Test event counting for a weekly habit"""
-        habit_name = "Exercise_weekly1"
+        habit_name = "Exercise_weekly4"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        count = calculate_count(self.db, habit_name)
+        assert count == 1
+
+        habit_name = "Exercise_weekly2"
         habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
         habit.store(self.db)
         habit.add_event(self.db)
         habit.add_event(self.db, "2025-02-15")
         habit.add_event(self.db, "2025-02-18")
-        habit.add_event(self.db, "2025-02-22")
         count = calculate_count(self.db, habit_name)
-        assert count == 4
+        assert count == 3
 
     def test_calculate_streaks_daily(self):
         """Test streak calculation for daily habits"""
-        habit_name = "Exercise_daily3"
+        habit_name = "Exercise_daily1"
         habit = Habit(habit_name, PeriodType.DAILY, date.today())
         habit.store(self.db)
         habit.add_event(self.db)
@@ -86,9 +101,7 @@ class TestHabitTracker:
         assert current_streak == 2
         assert max_streak == 2
 
-    def test_calculate_streaks_daily(self):
-        """Test streak calculation for daily habits"""
-        habit_name = "Exercise_daily4"
+        habit_name = "Exercise_daily2"
         habit = Habit(habit_name, PeriodType.DAILY, date.today())
         habit.store(self.db)
         habit.add_event(self.db)
@@ -102,6 +115,110 @@ class TestHabitTracker:
         current_streak, max_streak = calculate_streaks(habit)
         assert current_streak == 3
         assert max_streak == 5
+
+        habit_name = "Exercise_daily3"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(days=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=2)).isoformat())
+        habit.add_event(self.db, "2025-03-01")
+        habit.add_event(self.db, "2025-03-02")
+        habit.add_event(self.db, "2025-03-03")
+        current_streak, max_streak = calculate_streaks(habit)
+        assert current_streak == 3
+        assert max_streak == 3
+
+        habit_name = "Exercise_daily4"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        # habit.add_event(self.db, (date.today() - timedelta(days=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=2)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=3)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=4)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=5)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=6)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=7)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=8)).isoformat())
+        current_streak, max_streak = calculate_streaks(habit)
+        assert current_streak == 0
+        assert max_streak == 7
+
+        habit_name = "Exercise_daily5"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, "2024-12-31")
+        habit.add_event(self.db, "2025-01-01")
+        habit.add_event(self.db, "2025-01-02")
+        current_streak, max_streak = calculate_streaks(habit)
+        assert current_streak == 1
+        assert max_streak == 3
+
+    def test_calcualte_streaks_weekly(self):
+        """Test streak calculation for weekly habits"""
+        habit_name = "Exercise_weekly1"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(weeks=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=2)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=3)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=4)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=5)).isoformat())
+        current_streak, max_streak = calculate_streaks(habit)
+        assert current_streak == 6
+        assert max_streak == 6
+
+        habit_name = "Exercise_weekly2"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db, "2025-02-22")
+        habit.add_event(self.db, "2025-02-15")
+        habit.add_event(self.db, "2025-02-08")
+        current_streak, max_streak = calculate_streaks(habit)
+        assert current_streak == 0
+        assert max_streak == 3
+
+        habit_name = "Exercise_weekly3"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(weeks=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=2)).isoformat())
+        habit.add_event(self.db, "2024-12-16")
+        habit.add_event(self.db, "2024-12-23")
+        habit.add_event(self.db, "2024-12-30")
+        habit.add_event(self.db, "2025-01-06")
+        habit.add_event(self.db, "2025-01-13")
+        current_streak, max_streak = calculate_streaks(habit)
+        assert current_streak == 3
+        assert max_streak == 5
+
+        habit_name = "Exercise_weekly4"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(weeks=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=2)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=3)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=4)).isoformat())
+        current_streak, max_streak = calculate_streaks(habit)
+        assert current_streak == 4
+        assert max_streak == 4
+
+        habit_name = "Exercise_weekly5"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(weeks=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=2)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=3)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=6)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=7)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=8)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=9)).isoformat())
+        current_streak, max_streak = calculate_streaks(habit)
+        assert current_streak == 3
+        assert max_streak == 4
 
     def test_calculate_streaks_weekly(self):
         """Test streak calculation for weekly habits"""
@@ -159,7 +276,7 @@ class TestHabitTracker:
 
     def test_get_habits_by_periodicity_daily(self):
         """Test filtering habits by daily periodicity"""
-        habit_name = "Exercise"
+        habit_name = "Exercise_daily1"
         habit = Habit(habit_name, PeriodType.DAILY, date.today())
         habit.store(self.db)
         print(habit.name, habit.period_type)
