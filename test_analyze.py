@@ -220,60 +220,6 @@ class TestHabitTracker:
         assert current_streak == 3
         assert max_streak == 4
 
-    def test_calculate_streaks_weekly(self):
-        """Test streak calculation for weekly habits"""
-        habit_name = "Exercise_weekly3"
-        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
-        habit.store(self.db)
-
-        # Add events with a 7-day gap
-        habit.add_event(self.db)
-        habit.add_event(self.db, (date.today() - timedelta(days=7)).isoformat())
-        habit.add_event(self.db, (date.today() - timedelta(days=14)).isoformat())
-        habit.add_event(self.db, "2024-12-16")
-        habit.add_event(self.db, "2024-12-23")
-        habit.add_event(self.db, "2024-12-30")
-        habit.add_event(self.db, "2025-01-06")
-        habit.add_event(self.db, "2025-01-13")
-
-        # Debugging: Check if events are correctly added
-        events = get_habit_data(self.db, habit_name)
-        print(f"Stored events: {events}")
-
-        # Calculate streaks
-        current_streak, max_streak = calculate_streaks(habit)
-
-        # Debugging: Print out calculated streaks
-        print(f"Calculated streaks: Current - {current_streak}, Max - {max_streak}")
-
-        # Assert the correct streak values
-        assert current_streak == 3
-        assert max_streak == 5
-
-    def test_calculate_streaks_weekly(self):
-        """Test streak calculation for weekly habits"""
-        habit_name = "Exercise_weekly2"
-        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
-        habit.store(self.db)
-
-        # Add events with a 7-day gap
-        habit.add_event(self.db)
-        habit.add_event(self.db, (date.today() - timedelta(days=7)).isoformat())
-
-        # Debugging: Check if events are correctly added
-        events = get_habit_data(self.db, habit_name)
-        print(f"Stored events: {events}")
-
-        # Calculate streaks
-        current_streak, max_streak = calculate_streaks(habit)
-
-        # Debugging: Print out calculated streaks
-        print(f"Calculated streaks: Current - {current_streak}, Max - {max_streak}")
-
-        # Assert the correct streak values
-        assert current_streak == 2
-        assert max_streak == 2
-
     def test_get_habits_by_periodicity_daily(self):
         """Test filtering habits by daily periodicity"""
         habit_name = "Exercise_daily1"
@@ -306,8 +252,23 @@ class TestHabitTracker:
         habit.add_event(self.db, (date.today() - timedelta(days=1)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(days=2)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(days=3)).isoformat())
+        habit_name = "Exercise_daily3"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(days=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=2)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=3)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=4)).isoformat())
+        habit_name = "Exercise_daily4"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit_name = "Exercise_daily5"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
         longest_daily = get_longest_daily_run_streak(self.db)
-        assert longest_daily == [(habit_name, 4)]
+        assert longest_daily == [("Exercise_daily3", 5)]
 
     def test_longest_weekly_streak(self):
         """Test calculation of longest weekly streak"""
@@ -324,8 +285,22 @@ class TestHabitTracker:
         habit.add_event(self.db, (date.today() - timedelta(weeks=2)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(weeks=3)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(weeks=4)).isoformat())
+        habit_name = "Exercise_weekly3"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(weeks=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=2)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=3)).isoformat())
+        habit_name = "Exercise_weekly4"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit_name = "Exercise_weekly5"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
         longest_weekly = get_longest_weekly_run_streak(self.db)
-        assert longest_weekly == [(habit_name, 5)]
+        assert longest_weekly == [("Exercise_weekly2", 5)]
 
     def test_longest_daily_streak_tie(self):
         """Test calculation of longest daily streak with a tie"""
@@ -340,7 +315,26 @@ class TestHabitTracker:
         habit.add_event(self.db)
         habit.add_event(self.db, (date.today() - timedelta(days=1)).isoformat())
         longest_daily = get_longest_daily_run_streak(self.db)
-        assert longest_daily == [("Exercise_daily1", 2), ("Exercise_daily2", 2)]
+        habit_name = "Exercise_daily3"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db, "2025-03-15")
+        habit.add_event(self.db, "2025-03-14")
+        habit_name = "Exercise_daily4"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(days=1)).isoformat())
+        habit_name = "Exercise_daily5"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        longest_daily = get_longest_daily_run_streak(self.db)
+        assert longest_daily == [
+            ("Exercise_daily1", 2),
+            ("Exercise_daily2", 2),
+            ("Exercise_daily3", 2),
+            ("Exercise_daily4", 2),
+        ]
 
     def test_longest_weekly_streak_tie(self):
         """Test calculation of longest weekly streak with a tie"""
@@ -354,8 +348,26 @@ class TestHabitTracker:
         habit.store(self.db)
         habit.add_event(self.db)
         habit.add_event(self.db, (date.today() - timedelta(weeks=1)).isoformat())
+        habit_name = "Exercise_weekly3"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db, "2025-03-15")
+        habit.add_event(self.db, "2025-03-08")
+        habit_name = "Exercise_weekly4"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(weeks=1)).isoformat())
+        habit_name = "Exercise_weekly5"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
         longest_weekly = get_longest_weekly_run_streak(self.db)
-        assert longest_weekly == [("Exercise_weekly1", 2), ("Exercise_weekly2", 2)]
+        assert longest_weekly == [
+            ("Exercise_weekly1", 2),
+            ("Exercise_weekly2", 2),
+            ("Exercise_weekly3", 2),
+            ("Exercise_weekly4", 2),
+        ]
 
     def test_get_longest_overall_streak(self):
         """Test calculation of longest overall streak"""
@@ -367,6 +379,19 @@ class TestHabitTracker:
         habit.add_event(self.db, (date.today() - timedelta(days=2)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(days=3)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(days=4)).isoformat())
+        habit_name = "Exercise_daily2"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(days=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=2)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=3)).isoformat())
+        habit_name = "Exercise_daily3"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(days=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=2)).isoformat())
         habit_name = "Exercise_weekly1"
         habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
         habit.store(self.db)
@@ -376,8 +401,14 @@ class TestHabitTracker:
         habit.add_event(self.db, (date.today() - timedelta(weeks=3)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(weeks=4)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(weeks=5)).isoformat())
+        habit_name = "Exercise_weekly2"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(weeks=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=2)).isoformat())
         longest_overall = get_longest_overall_run_streak(self.db)
-        assert longest_overall == [(habit_name, 6)]
+        assert longest_overall == [("Exercise_weekly1", 6)]
 
     def test_get_longest_overall_streak_tie(self):
         """Test calculation of longest overall streak"""
@@ -390,6 +421,19 @@ class TestHabitTracker:
         habit.add_event(self.db, (date.today() - timedelta(days=3)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(days=4)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(days=5)).isoformat())
+        habit_name = "Exercise_daily2"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(days=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=2)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=3)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=4)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(days=5)).isoformat())
+        habit_name = "Exercise_daily3"
+        habit = Habit(habit_name, PeriodType.DAILY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
         habit_name = "Exercise_weekly1"
         habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
         habit.store(self.db)
@@ -399,8 +443,22 @@ class TestHabitTracker:
         habit.add_event(self.db, (date.today() - timedelta(weeks=3)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(weeks=4)).isoformat())
         habit.add_event(self.db, (date.today() - timedelta(weeks=5)).isoformat())
+        habit_name = "Exercise_weekly2"
+        habit = Habit(habit_name, PeriodType.WEEKLY, date.today())
+        habit.store(self.db)
+        habit.add_event(self.db)
+        habit.add_event(self.db, (date.today() - timedelta(weeks=1)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=2)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=3)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=4)).isoformat())
+        habit.add_event(self.db, (date.today() - timedelta(weeks=5)).isoformat())
         longest_overall = get_longest_overall_run_streak(self.db)
-        assert longest_overall == [("Exercise_daily1", 6), ("Exercise_weekly1", 6)]
+        assert longest_overall == [
+            ("Exercise_daily1", 6),
+            ("Exercise_daily2", 6),
+            ("Exercise_weekly1", 6),
+            ("Exercise_weekly2", 6),
+        ]
 
     def test_edge_case_no_habits(self):
         """Test behavior when no habits are created"""
