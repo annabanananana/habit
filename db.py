@@ -16,12 +16,6 @@ def get_db(name="main.db"):
         return None
 
 
-# class PeriodType():
-#   """PeriodType class for daily and weekly habits."""
-#  DAILY = "daily"
-# WEEKLY = "weekly"
-
-
 def create_tables(db):
     # creating tables for habit and tracker
     cur = db.cursor()
