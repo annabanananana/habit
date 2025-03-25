@@ -67,21 +67,17 @@ def calculate_streaks(habit_obj) -> tuple[int, int]:
         current_streak = 1
         prev_date = event_dates[0]
 
-        for current_date in event_dates[1:]:  # missing day 1
-            # Debugging output
-            print(f"Comparing {prev_date} with {current_date}")
+        for current_date in event_dates[1:]:
             gap = (current_date - prev_date).days
-            print(f"Gap: {gap} days")
-            print(f"Period type: {habit_obj.period_type}")
             # Explicitly allow exactly 7-day gaps for weekly habits, must be == 7 or == 1
             if gap <= (
                 7 if habit_obj.period_type == PeriodType.WEEKLY else 1
             ):  # 7 days for weekly, 1 day for daily or adjust for different gaps
                 current_streak += 1
-                print(f"Streak increased to {current_streak}")
+                # print(f"Streak increased to {current_streak}")
             else:
                 max_streak = max(max_streak, current_streak)
-                print(f"Streak reset. Max streak: {max_streak}")
+                # print(f"Streak reset. Max streak: {max_streak}")
                 current_streak = 1  # Reset streak
             prev_date = current_date
 
