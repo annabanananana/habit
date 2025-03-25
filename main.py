@@ -1,8 +1,8 @@
 """
 This code was generated with the help of ChatGPT. Following prompt was used:
-I want to code a habit tracker app using python and using the CLI. I also want to use questionary and click for easier handling. 
-Further more I want to be able to create, increment, and analyze my habits. 
-There should be weekly and monthly habits, which I want to track if they are fullfilled or not. 
+I want to code a habit tracker app using python and using the CLI. I also want to use questionary and click for easier handling.
+Further more I want to be able to create, increment, and analyze my habits.
+There should be weekly and monthly habits, which I want to track if they are fullfilled or not.
 Throughout the programming ChatGPT was used to solve some other issues, like implementing the overview table and generating the test data.
 """
 
@@ -275,6 +275,27 @@ def show_habits():
 
 
 @click.command()
+def delete_habit():
+    """Delete a habit"""
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT name FROM habit")
+    habits = cursor.fetchall()
+
+    if not habits:
+        click.echo("No habit created yet!")
+        return
+
+    habit_names = [name for name, in habits]
+    selected_habit = questionary.select("Which habit do you want to delete?", choices=habit_names).ask()
+
+    cursor.execute("DELETE FROM habit WHERE name = ?", (selected_habit,))
+    cursor.execute("DELETE FROM tracker WHERE habitName = ?", (selected_habit,))
+    db.commit()
+    click.echo(f"Habit '{selected_habit}' has been deleted.")
+
+
+@click.command()
 def exit_cli():
     """Exit the habit tracker CLI"""
     click.echo("Goodbye!")
@@ -288,6 +309,7 @@ cli.add_command(analyze)
 cli.add_command(show_habits)
 cli.add_command(exit_cli)
 cli.add_command(filter_habits)
+cli.add_command(delete_habit)
 
 
 if __name__ == "__main__":
